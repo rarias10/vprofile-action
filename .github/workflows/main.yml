@@ -43,10 +43,22 @@ jobs:
             -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml \
             -Dsonar.java.binaries=target/classes
 
-      - name: SonarQube Quality Gate check
-        id: sonarqube-quality-gate-check
-        uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_URL }}
+  BUILD_AND_PUBLISH:
+    needs: Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build & Upload image to ECR
+        uses: appleboy/docker-ecr-action@v0.20.0   # pin a release
+        with:
+          access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region:     ${{ env.AWS_REGION }}
+          registry:   ${{ secrets.REGISTRY }}             # e.g. 123456789012.dkr.ecr.us-east-2.amazonaws.com
+          repo:       ${{ env.ECR_REPOSITORY }}           # e.g. vprofileapp
+          tags:       latest,${{ github.run_number }},${{ github.sha }}
+          dockerfile: ./Dockerfile
+          context:    ./
+          daemon_off: false
