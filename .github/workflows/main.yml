@@ -5,7 +5,7 @@ on:
 
 env:
   AWS_REGION: us-east-2
-  ECR_REPOSITORY: vprofileapp
+  ECR_REPOSITORY: vprofile-app
   EKS_CLUSTER: vprofile-eks
 
 jobs:
